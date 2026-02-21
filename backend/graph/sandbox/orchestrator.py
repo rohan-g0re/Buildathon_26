@@ -5,10 +5,6 @@ Uses astream() per subgraph so that each node's status_updates are
 published to SSE in real-time.  Up to ``settings.sandbox_concurrency``
 negotiations run in parallel (controlled by asyncio.Semaphore).
 
-When use_blaxel=True, each negotiation runs inside an isolated Blaxel
-sandbox.  When use_blaxel=False (default / local dev), the subgraph
-runs directly in-process — no Blaxel dependency required.
-
 See: docs/architecture/LLD_sandbox.md § 8
 """
 
@@ -113,17 +109,6 @@ async def _negotiate_move(
         await _publish(start_event)
         status_updates_pre: list[dict] = [start_event]
 
-        # ── Optional Blaxel sandbox creation ─────────────────
-        sandbox = None
-        if settings.use_blaxel:
-            from sandbox.blaxel_manager import (
-                create_negotiation_sandbox,
-                cleanup_sandbox,
-            )
-            sandbox = await create_negotiation_sandbox(
-                ticker=ticker, move_id=move_id,
-            )
-
         subgraph_input: SandboxState = {
             "move_document": move,
             "ticker": ticker,
@@ -198,10 +183,6 @@ async def _negotiate_move(
                 "status_updates": status_updates,
             }
 
-        finally:
-            if sandbox is not None:
-                from sandbox.blaxel_manager import cleanup_sandbox
-                await cleanup_sandbox(sandbox)
 
 
 async def sandbox_orchestrator(state: PipelineState) -> dict:

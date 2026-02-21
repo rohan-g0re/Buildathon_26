@@ -3,7 +3,7 @@ Test for Sandbox (Layer 3+4) — Critic vs Decision Makers negotiation + scoring
 Run from backend/:  python test_sandbox.py
 
 Reads move(s) from backend/output/moves/ and runs the full sandbox subgraph
-(bypassing Blaxel). Writes conversation logs and scores to output/sandbox/.
+Writes conversation logs and scores to output/sandbox/.
 
 Environment variables:
   TEST_MOVE    — which move to test (default: m3). Set to "all" to run all
