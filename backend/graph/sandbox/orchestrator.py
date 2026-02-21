@@ -5,10 +5,6 @@ Uses astream() instead of ainvoke() so that each subgraph node's
 status_updates are published to SSE *immediately* (real-time),
 rather than being batched until the entire orchestrator finishes.
 
-When use_blaxel=True, each negotiation runs inside an isolated Blaxel
-sandbox.  When use_blaxel=False (default / local dev), the subgraph
-runs directly in-process — no Blaxel dependency required.
-
 See: docs/architecture/LLD_sandbox.md § 8
 """
 
@@ -69,7 +65,6 @@ async def sandbox_orchestrator(state: PipelineState) -> dict:
     Collects scores and conversation logs.
 
     Moves with insufficient content are auto-skipped with score 0.
-    Blaxel is used only when settings.use_blaxel is True.
     """
     raw_moves = state["move_suggestions"]
 
@@ -122,18 +117,6 @@ async def sandbox_orchestrator(state: PipelineState) -> dict:
         log.info("(%d/%d) %s: Negotiating — \"%s\" (%d chars)",
                  idx, total_moves, move_id, title, content_len)
         move_start = time.time()
-
-        # ── Optional Blaxel sandbox creation ─────────────────
-        sandbox = None
-        if settings.use_blaxel:
-            from sandbox.blaxel_manager import (
-                create_negotiation_sandbox,
-                cleanup_sandbox,
-            )
-            sandbox = await create_negotiation_sandbox(
-                ticker=state["company_ticker"],
-                move_id=move_id,
-            )
 
         # ── Prepare subgraph input (fresh state per move) ────
         subgraph_input: SandboxState = {
@@ -206,11 +189,6 @@ async def sandbox_orchestrator(state: PipelineState) -> dict:
             }
             await _publish(error_event)
             all_status_updates.append(error_event)
-
-        # ── Optional Blaxel cleanup ──────────────────────────
-        if sandbox is not None:
-            from sandbox.blaxel_manager import cleanup_sandbox
-            await cleanup_sandbox(sandbox)
 
     total_elapsed = time.time() - orchestrator_start
     scored_count = sum(1 for s in all_scores if not s.get("skipped"))

@@ -5,7 +5,7 @@ langgraph
 langchain
 langchain-openai
 langchain-anthropic
-blaxel
+
 pydantic
 pydantic-settings
 python-dotenv

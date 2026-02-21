@@ -19,12 +19,6 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.7
     llm_max_retries: int = 3
 
-    # --- Blaxel ---
-    use_blaxel: bool = False             # set True when Blaxel is configured
-    blaxel_workspace: str = ""
-    blaxel_api_key: str = ""
-    blaxel_region: str = "us-pdx-1"
-
     # --- Pipeline Config ---
     num_analyst_agents: int = 5
     num_negotiation_rounds: int = 10
