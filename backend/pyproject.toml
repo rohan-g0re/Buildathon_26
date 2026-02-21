@@ -1,0 +1,23 @@
+[project]
+name = "ai-consulting-agency"
+version = "0.1.0"
+description = "Multi-layer AI agent pipeline for strategic business consulting"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "langgraph",
+    "anthropic",
+    "blaxel",
+    "pydantic",
+    "pydantic-settings",
+    "python-dotenv",
+    "httpx",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+]
