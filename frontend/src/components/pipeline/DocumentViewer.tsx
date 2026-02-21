@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FileText, ChevronDown, Check } from "lucide-react";
 import { type ArtifactState } from "@/hooks/useLayerStatus";
 import { cn } from "@/lib/utils";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 export function DocumentViewer({ document }: { document: ArtifactState }) {
   const [expanded, setExpanded] = useState(false);
@@ -64,10 +65,8 @@ export function DocumentViewer({ document }: { document: ArtifactState }) {
             exit={{ height: 0, opacity: 0 }}
             className="border-t border-white/[0.05]"
           >
-            <div className="p-6 bg-black/20">
-              <pre className="text-xs md:text-sm text-white/70 font-mono whitespace-pre-wrap leading-relaxed max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
-                {document.content}
-              </pre>
+            <div className="p-6 bg-black/20 max-h-[400px] overflow-y-auto custom-scrollbar">
+              <MarkdownRenderer content={document.content} compact />
             </div>
           </motion.div>
         )}

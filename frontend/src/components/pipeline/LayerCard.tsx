@@ -138,5 +138,12 @@ function StatusIcon({ status }: { status: string }) {
   if (status === "error") {
     return <AlertTriangle className="w-5 h-5 text-red-400" />
   }
-  return <PlayCircle className="w-5 h-5 text-white/20" />
+  return (
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+    >
+      <RotateCw className="w-5 h-5 text-white/20" />
+    </motion.div>
+  )
 }

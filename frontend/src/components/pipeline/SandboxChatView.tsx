@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Bot, Shield } from "lucide-react";
 import { type SSEEvent } from "@/hooks/useSSE";
 import { cn } from "@/lib/utils";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 interface ChatMessage {
   role: string;   // "critic" | "D1" | "D2" | "D3"
@@ -253,9 +254,7 @@ export function SandboxChatView({ events, selectedMoveId, onSelectMove }: Sandbo
                           {isCritic ? "Critic" : `${msg.role} — ${dmName}`}
                         </span>
                       </div>
-                      <div className="whitespace-pre-wrap text-xs md:text-sm leading-relaxed">
-                        {msg.content}
-                      </div>
+                      <MarkdownRenderer content={msg.content} compact />
                     </div>
 
                     {/* DM avatar (right) */}

@@ -20,7 +20,10 @@ import { getResults } from "@/lib/api";
 import { LayerCard } from "./LayerCard";
 import { LayerDetail } from "./LayerDetail";
 import { ConnectionLine } from "./ConnectionLine";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ArrowRight, X } from "lucide-react";
+import { type MoveResult, type ScoreBreakdown } from "@/lib/types";
+import { RecommendedMoves } from "@/components/output/RecommendedMoves";
+import { OtherMoves } from "@/components/output/OtherMoves";
 
 interface PipelineViewProps {
   analysisId: string;
@@ -31,6 +34,7 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
   const { events, status } = useSSE(analysisId);
   const { zoomedLayer, setZoomedLayer, isZoomed } = usePipelineZoom();
   const layers = useLayerStatus(events);
+  const [showResults, setShowResults] = useState(false);
 
   // ---------- Fetch partial results as each layer completes ----------
   const [results, setResults] = useState<Record<string, unknown> | null>(null);
@@ -189,15 +193,58 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
     return count;
   }, [events]);
 
+  // Derive ranked MoveResult[] for the results view
+  const { recommendedMoves, otherMoves } = useMemo(() => {
+    if (!results) return { recommendedMoves: [], otherMoves: [] };
+
+    const toMoveResult = (entry: Record<string, unknown>): MoveResult => {
+      const moveDoc = entry.move_document as Record<string, unknown> | undefined;
+      return {
+        move_id: (entry.move_id as string) ?? "?",
+        total_score: (entry.total_score as number) ?? 0,
+        scores_by_agent: (entry.scores_by_agent as Record<string, ScoreBreakdown>) ?? {},
+        move_document: moveDoc ? {
+          move_id: (moveDoc.move_id as string) ?? "",
+          agent_id: (moveDoc.agent_id as string) ?? "",
+          persona: (moveDoc.persona as string) ?? "",
+          risk_level: (moveDoc.risk_level as "low" | "medium" | "high") ?? "medium",
+          title: (moveDoc.title as string) ?? "Untitled",
+          content: (moveDoc.content as string) ?? "",
+          ticker: (moveDoc.ticker as string) ?? ticker,
+        } : {
+          move_id: (entry.move_id as string) ?? "",
+          agent_id: "",
+          persona: "",
+          risk_level: "medium" as const,
+          title: "Untitled",
+          content: "",
+          ticker,
+        },
+      };
+    };
+
+    const rec = (results.recommended_moves as Array<Record<string, unknown>> ?? []).map(toMoveResult);
+    const oth = (results.other_moves as Array<Record<string, unknown>> ?? []).map(toMoveResult);
+
+    return { recommendedMoves: rec, otherMoves: oth };
+  }, [results, ticker]);
+
   return (
     <div className="relative w-full h-[calc(100vh-100px)] flex flex-col items-center justify-center overflow-hidden">
       {/* Global Progress Bar — fixed at top */}
       <div className="absolute top-24 left-0 right-0 z-30 px-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-mono text-white/40 uppercase tracking-wider">
-              Pipeline Progress
-            </span>
+            {isPipelineDone ? (
+              <span className="flex items-center gap-2 text-xs font-mono text-emerald-400 uppercase tracking-wider">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Analysis Complete
+              </span>
+            ) : (
+              <span className="text-xs font-mono text-white/40 uppercase tracking-wider">
+                Pipeline Progress
+              </span>
+            )}
             <span className="text-xs font-mono text-white/60">
               {overallProgress}%
             </span>
@@ -262,19 +309,6 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Success badge */}
-            <motion.div
-              className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 px-6 py-3 rounded-2xl"
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            >
-              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              <span className="text-emerald-300 font-semibold text-sm">
-                Analysis Complete
-              </span>
-            </motion.div>
-
             <div className="text-center">
               <h2 className="text-3xl font-bold text-white mb-2">
                 {ticker.toUpperCase()} Analysis
@@ -299,6 +333,22 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
                 </Fragment>
               ))}
             </div>
+
+            {/* View Analysis button */}
+            {(recommendedMoves.length > 0 || otherMoves.length > 0) && (
+              <motion.button
+                onClick={() => setShowResults(true)}
+                className="flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-white/90 font-semibold text-sm hover:from-blue-500/30 hover:to-purple-500/30 hover:border-blue-500/50 transition-all duration-300 shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                View Analysis
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
+            )}
           </motion.div>
         ) : !isZoomed ? (
           // Overview: 4 cards in a row
@@ -347,6 +397,52 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
               events={events}
             />
           </Fragment>
+        )}
+      </AnimatePresence>
+
+      {/* Results Overlay */}
+      <AnimatePresence>
+        {showResults && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-[#02040a]/90 backdrop-blur-md z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowResults(false)}
+            />
+            <motion.div
+              className="fixed inset-4 md:inset-8 lg:inset-12 z-50 rounded-[32px] overflow-hidden bg-[#02040a] border border-white/10 shadow-2xl flex flex-col"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", stiffness: 200, damping: 25 }}
+            >
+              {/* Results header */}
+              <div className="flex items-center justify-between px-8 py-5 border-b border-white/[0.06]">
+                <div>
+                  <h2 className="text-xl font-bold text-white">
+                    {ticker.toUpperCase()} — Strategic Analysis
+                  </h2>
+                  <p className="text-xs text-white/35 mt-0.5">
+                    {recommendedMoves.length + otherMoves.length} moves scored and ranked
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowResults(false)}
+                  className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white/40 hover:text-white/70"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Results content */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8">
+                <RecommendedMoves moves={recommendedMoves} />
+                <OtherMoves moves={otherMoves} startRank={recommendedMoves.length + 1} />
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
