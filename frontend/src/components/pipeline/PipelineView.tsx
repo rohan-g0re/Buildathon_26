@@ -11,7 +11,7 @@
 
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSSE } from "@/hooks/useSSE";
 import { usePipelineZoom } from "@/hooks/usePipelineZoom";
@@ -36,25 +36,46 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
   const layers = useLayerStatus(events);
   const [showResults, setShowResults] = useState(false);
 
-  // ---------- Fetch partial results as each layer completes ----------
+  // ---------- Fetch results: on layer completion, pipeline done, and initial mount ----------
   const [results, setResults] = useState<Record<string, unknown> | null>(null);
 
-  // Count how many layer_complete events have been received so far.
   const completedLayerCount = useMemo(() => {
     return events.filter((e) => e.event === "layer_complete").length;
   }, [events]);
 
-  // Track the last count we fetched for so we don't re-fetch unnecessarily.
   const lastFetchedCount = useRef(0);
+  const hasFetchedForDone = useRef(false);
 
+  const fetchAndSetResults = useCallback(() => {
+    if (!analysisId) return;
+    getResults(analysisId)
+      .then((data) => setResults(data.result ?? data))
+      .catch((err) => console.error("Failed to fetch results:", err));
+  }, [analysisId]);
+
+  // 1. Partial fetch each time a new layer completes
   useEffect(() => {
     if (completedLayerCount > lastFetchedCount.current && analysisId) {
       lastFetchedCount.current = completedLayerCount;
-      getResults(analysisId)
-        .then((data) => setResults(data.result ?? data))
-        .catch((err) => console.error("Failed to fetch results:", err));
+      fetchAndSetResults();
     }
-  }, [completedLayerCount, analysisId]);
+  }, [completedLayerCount, analysisId, fetchAndSetResults]);
+
+  // 2. Final fetch when pipeline status becomes "done" — captures ranked moves
+  //    that may be written after the last layer_complete event.
+  useEffect(() => {
+    if (status === "done" && !hasFetchedForDone.current) {
+      hasFetchedForDone.current = true;
+      const timer = setTimeout(fetchAndSetResults, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [status, fetchAndSetResults]);
+
+  // 3. Fetch once on mount for existing analysisId (handles page reload /
+  //    direct navigation to an already-completed run).
+  useEffect(() => {
+    fetchAndSetResults();
+  }, [fetchAndSetResults]);
 
   // ---------- Enrich layers with artifacts from results ----------
   const enrichedLayers: LayerState[] = useMemo(() => {
