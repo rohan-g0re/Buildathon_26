@@ -319,9 +319,10 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
       {/* Ambient Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
 
+      {/* Main content — overview or completion summary. Cards stay mounted
+          so layoutId targets exist when the zoom overlay closes. */}
       <AnimatePresence mode="wait">
-        {isPipelineDone && !isZoomed ? (
-          // Completion Summary
+        {isPipelineDone ? (
           <motion.div
             key="complete"
             className="relative z-10 flex flex-col items-center gap-8"
@@ -341,7 +342,6 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
               </p>
             </div>
 
-            {/* Layer cards — clickable to view details */}
             <div className="flex gap-4 items-center">
               {enrichedLayers.map((layer, i) => (
                 <Fragment key={layer.id}>
@@ -355,7 +355,6 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
               ))}
             </div>
 
-            {/* View Analysis button */}
             {(recommendedMoves.length > 0 || otherMoves.length > 0) && (
               <motion.button
                 onClick={() => setShowResults(true)}
@@ -371,8 +370,7 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
               </motion.button>
             )}
           </motion.div>
-        ) : !isZoomed ? (
-          // Overview: 4 cards in a row
+        ) : (
           <motion.div
             key="overview"
             className="relative z-10 flex gap-5 items-center px-8 py-12 overflow-x-auto max-w-full justify-center hide-scrollbar"
@@ -402,14 +400,22 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
               </Fragment>
             ))}
           </motion.div>
-        ) : (
-          // Zoomed: full detail view
-          <Fragment key="zoomed">
+        )}
+      </AnimatePresence>
+
+      {/* Zoomed layer overlay — separate AnimatePresence so the LayerCard
+          layoutId targets in the content above remain mounted during the
+          close animation, preventing the visual "tearing" glitch. */}
+      <AnimatePresence>
+        {isZoomed && zoomedLayer && (
+          <>
             <motion.div
-              className="fixed inset-0 bg-[#02040a]/80 backdrop-blur-md z-40 transition-opacity duration-500"
+              key="zoom-backdrop"
+              className="fixed inset-0 bg-[#02040a]/80 backdrop-blur-md z-40"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
               onClick={() => setZoomedLayer(null)}
             />
             <LayerDetail
@@ -417,7 +423,7 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
               onClose={() => setZoomedLayer(null)}
               events={events}
             />
-          </Fragment>
+          </>
         )}
       </AnimatePresence>
 
