@@ -2,11 +2,7 @@
 
 > **13 AI agents. 4 layers. 10 rounds of adversarial debate. One strategic recommendation.**
 
-<!-- Replace with your demo video link -->
-
-[![Demo Video](https://img.shields.io/badge/▶_Watch_Demo-Video-blue?style=for-the-badge)](#)
-
-<!-- [![Demo Video](https://img.shields.io/badge/▶_Watch_Demo-Video-blue?style=for-the-badge)](https://youtu.be/YOUR_LINK) -->
+[![Demo Video](https://img.shields.io/badge/▶_Watch_Demo-Video-blue?style=for-the-badge)](https://youtu.be/vVV2Z2FfIO4)
 
 ---
 
