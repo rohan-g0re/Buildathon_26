@@ -48,9 +48,9 @@ export function TickerInput() {
             setTicker(e.target.value.toUpperCase());
             setError("");
           }}
-          placeholder="Enter ticker (e.g., AAPL)"
+          placeholder="Enter ticker"
           disabled={loading}
-          className="px-5 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 w-64 font-mono tracking-wider text-center text-lg transition-all disabled:opacity-50"
+          className="px-5 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 w-64 font-mono tracking-wider text-left text-lg transition-all disabled:opacity-50"
           maxLength={5}
           autoFocus
         />

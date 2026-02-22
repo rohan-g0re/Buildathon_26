@@ -17,7 +17,7 @@ export default function Home() {
             Multi-Agent Pipeline
           </span>
         </div>
-        <h1 className="text-5xl font-bold mb-4 tracking-tight bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
+        <h1 className="text-5xl font-bold mb-4 tracking-tight text-white">
           AI Consulting Agency
         </h1>
         <p className="text-white/40 mb-12 text-lg">
