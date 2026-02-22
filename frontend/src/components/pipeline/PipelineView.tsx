@@ -251,9 +251,9 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
   }, [results, ticker]);
 
   return (
-    <div className="relative w-full h-[calc(100vh-100px)] flex flex-col items-center justify-center overflow-hidden">
-      {/* Global Progress Bar — fixed at top */}
-      <div className="absolute top-24 left-0 right-0 z-30 px-8">
+    <div className="relative w-full flex-1 flex flex-col items-center overflow-hidden">
+      {/* Global Progress Bar — in normal flow at top */}
+      <div className="pt-4 pb-3 w-full z-30 px-8 flex-shrink-0 border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             {isPipelineDone ? (
@@ -319,13 +319,14 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
       {/* Ambient Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
 
-      {/* Main content — overview or completion summary. Cards stay mounted
-          so layoutId targets exist when the zoom overlay closes. */}
+      {/* Main content area — fills remaining space, scrollable at high zoom */}
+      <div className="flex-1 flex items-center justify-center w-full overflow-y-auto overflow-x-hidden">
+
       <AnimatePresence mode="wait">
         {isPipelineDone ? (
           <motion.div
             key="complete"
-            className="relative z-10 flex flex-col items-center gap-8"
+            className="relative z-10 flex flex-col items-center gap-8 py-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -426,6 +427,8 @@ export function PipelineView({ analysisId, ticker }: PipelineViewProps) {
           </>
         )}
       </AnimatePresence>
+
+      </div>{/* end main content area */}
 
       {/* Results Overlay */}
       <AnimatePresence>

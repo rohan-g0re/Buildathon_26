@@ -47,10 +47,10 @@ export default function AnalysisPage() {
   }, [analysisId, ticker]);
 
   return (
-    <main className="min-h-screen bg-[#02040a] text-white overflow-hidden relative selection:bg-blue-500/30">
-      {/* Top Bar with Ticker */}
-      <div className="absolute top-0 left-0 right-0 z-50 px-8 py-6 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-4 pointer-events-auto">
+    <main className="h-screen bg-[#02040a] text-white flex flex-col overflow-hidden selection:bg-blue-500/30">
+      {/* Top Bar with Ticker — in normal flow */}
+      <div className="relative z-50 px-8 py-4 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-white tracking-widest">
             {ticker.slice(0, 2).toUpperCase()}
           </div>
@@ -66,11 +66,11 @@ export default function AnalysisPage() {
       </div>
 
       {error ? (
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex-1 flex items-center justify-center">
           <p className="text-red-400">{error}</p>
         </div>
       ) : !analysisId ? (
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex-1 flex items-center justify-center">
           <p className="text-white/40 animate-pulse">
             Starting analysis...
           </p>
