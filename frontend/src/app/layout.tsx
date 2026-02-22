@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Consulting Agency",
+  title: "Big4",
   description: "Multi-layer agent pipeline for strategic business analysis",
 };
 

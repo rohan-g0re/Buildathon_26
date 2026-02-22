@@ -1,5 +1,5 @@
 """
-AI Consulting Agency — FastAPI Entrypoint
+Big4 — FastAPI Entrypoint
 
 See: docs/architecture/LLD_pipeline.md § 4
 
@@ -19,7 +19,7 @@ from api.routes import router
 setup_logging()
 
 app = FastAPI(
-    title="AI Consulting Agency",
+    title="Big4",
     description="Multi-layer agent pipeline for strategic business analysis",
     version="0.1.0",
 )

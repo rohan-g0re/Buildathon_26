@@ -18,7 +18,7 @@ export default function Home() {
           </span>
         </div>
         <h1 className="text-5xl font-bold mb-4 tracking-tight text-white">
-          AI Consulting Agency
+          Big4
         </h1>
         <p className="text-white/40 mb-12 text-lg">
           Enter a company ticker to begin strategic analysis

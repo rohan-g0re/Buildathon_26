@@ -146,7 +146,7 @@ from api.routes import router
 from config.settings import settings
 
 app = FastAPI(
-    title="AI Consulting Agency",
+    title="Big4",
     description="Multi-layer agent pipeline for strategic business analysis",
     version="0.1.0",
 )
